@@ -129,9 +129,9 @@ langton_ant_draw (Display *dpy, Window window, void *closure)
       gcv.foreground = st->pixels [random () % st->npixels];
     DONE:
       ;
-
     }
 
+  XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
   XFillRectangle (st->dpy, st->window, st->gc, x, y, w, h);
   return st->delay;
 }
