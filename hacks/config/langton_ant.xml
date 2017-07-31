@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<screensaver name="greynetic" _label="Greynetic">
+<screensaver name="langton_ant" _label="Langton_Ant">
 
   <command arg="-root"/>
 
-  <video href="https://www.youtube.com/watch?v=lVEi089s1_c"/>
+  <!--<video href=""/> -->
 
   <number id="delay" type="slider" arg="-delay %"
           _label="Frame rate" _low-label="Low" _high-label="High"
@@ -18,8 +18,8 @@
   <xscreensaver-updater />
 
   <_description>
-Colored, stippled and transparent rectangles.
+Colored, Langton's Ant simulation.
 
-Written by Jamie Zawinski; 1992.
+Written by Daniel Gutowski; 2017.
   </_description>
 </screensaver>
