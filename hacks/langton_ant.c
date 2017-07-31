@@ -19,6 +19,8 @@
 
 #define NANTS 5
 
+#define steps 500
+
 
 struct state {
   Display *dpy;
@@ -36,6 +38,9 @@ struct state {
 
   int ant_x[NANTS];
   int ant_y[NANTS];
+  short ant_red[NANTS];
+  short ant_green[NANTS];
+  short ant_blue[NANTS];
 };
 
 
@@ -64,9 +69,12 @@ langton_ant_init (Display *dpy, Window window)
   gcv.fill_style= FillOpaqueStippled;
   st->gc = XCreateGC (st->dpy, st->window, GCForeground|GCBackground|GCFillStyle, &gcv);
 
-  for(i=0; i < NANTS; i++) {
+  for (i=0; i < NANTS; i++) {
     st->ant_x[i] = random() % st->xlim;
     st->ant_y[i] = random() % st->ylim;
+    st->ant_red[i] = random();
+    st->ant_green[i] = random();
+    st->ant_blue[i] = random();
   }
 
   return st;
@@ -76,63 +84,41 @@ static unsigned long
 langton_ant_draw (Display *dpy, Window window, void *closure)
 {
   struct state *st = (struct state *) closure;
-  int x, y, w=0, h=0, i;
+  int n=0, i=0, j;
   XGCValues gcv;
+  XColor fgc, bgc;
+  XPoint points[steps];
 
-  for (i = 0; i < 10; i++) /* minimize area, but don't try too hard */
-    {
-      w = 50 + random () % (st->xlim - 50);
-      h = 50 + random () % (st->ylim - 50);
-      if (w + h < st->xlim && w + h < st->ylim)
-	break;
-    }
-  x = random () % (st->xlim - w);
-  y = random () % (st->ylim - h);
-  if (mono_p)
-    {
-    MONO:
-      if (random () & 1)
-	gcv.foreground = st->fg, gcv.background = st->bg;
-      else
-	gcv.foreground = st->bg, gcv.background = st->fg;
-    }
-  else
-    {
-      XColor fgc, bgc;
-      if (st->npixels == sizeof (st->pixels) / sizeof (unsigned long))
-	goto REUSE;
-      fgc.flags = bgc.flags = DoRed|DoGreen|DoBlue;
-      fgc.red = random ();
-      fgc.green = random ();
-      fgc.blue = random ();
-      bgc.red = random ();
-      bgc.green = random ();
-      bgc.blue = random ();
 
-      if (st->grey_p)
-        {
-          fgc.green = fgc.blue = fgc.red;
-          bgc.green = bgc.blue = bgc.red;
-        }
+  for (j=0; j < steps; j++) {
+    points[j].x = random () % st->xlim;
+    points[j].y = random () % st->ylim;
+    n++;
+  }
 
-      if (! XAllocColor (st->dpy, st->cmap, &fgc))
-	goto REUSE;
-      st->pixels [st->npixels++] = fgc.pixel;
-      gcv.foreground = fgc.pixel;
-      goto DONE;
-    REUSE:
-      if (st->npixels <= 0)
-	{
-	  mono_p = 1;
-	  goto MONO;
-	}
-      gcv.foreground = st->pixels [random () % st->npixels];
-    DONE:
-      ;
-    }
+  fgc.flags = bgc.flags = DoRed|DoGreen|DoBlue;
+  fgc.red = random ();
+  fgc.green = random ();
+  fgc.blue = random ();
+  bgc.red = st->ant_red[i];
+  bgc.green = st->ant_green[i];
+  bgc.blue = st->ant_blue[i];
 
+  if (st->grey_p)
+  {
+    fgc.green = fgc.blue = fgc.red;
+    bgc.green = bgc.blue = bgc.red;
+  }
+
+  if (! XAllocColor (st->dpy, st->cmap, &fgc))
+    printf("xd1\n");
+  if (! XAllocColor (st->dpy, st->cmap, &bgc))
+    printf("xd2\n");
+
+  gcv.foreground = fgc.pixel;
+  gcv.background = bgc.pixel;
   XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
-  XFillRectangle (st->dpy, st->window, st->gc, x, y, w, h);
+  XDrawPoints (st->dpy, st->window, st->gc, points, n, CoordModeOrigin);
   return st->delay;
 }
 
