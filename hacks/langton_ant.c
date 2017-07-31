@@ -26,12 +26,8 @@ struct state {
   Display *dpy;
   Window window;
 
-  Pixmap pixmaps [NBITS];
-
   GC gc;
   int delay;
-  unsigned long fg, bg, pixels [512];
-  int npixels;
   int xlim, ylim;
   Bool grey_p;
   Colormap cmap;
@@ -58,10 +54,9 @@ langton_ant_init (Display *dpy, Window window)
   st->xlim = xgwa.width;
   st->ylim = xgwa.height;
   st->cmap = xgwa.colormap;
-  st->npixels = 0;
   st->grey_p = get_boolean_resource(st->dpy, "grey", "Boolean");
-  gcv.foreground= st->fg= get_pixel_resource(st->dpy, st->cmap, "foreground","Foreground");
-  gcv.background= st->bg= get_pixel_resource(st->dpy, st->cmap, "background","Background");
+  gcv.foreground = get_pixel_resource(st->dpy, st->cmap, "foreground","Foreground");
+  gcv.background = get_pixel_resource(st->dpy, st->cmap, "background","Background");
 
   st->delay = get_integer_resource (st->dpy, "delay", "Integer");
   if (st->delay < 0) st->delay = 0;
