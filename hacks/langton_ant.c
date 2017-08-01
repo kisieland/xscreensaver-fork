@@ -9,6 +9,7 @@
  * implied warranty.
  */
 
+#include <stdbool.h>
 #include "screenhack.h"
 
 #ifndef HAVE_JWXYZ
@@ -32,6 +33,7 @@ struct state {
   Bool grey_p;
   Colormap cmap;
 
+  bool **map;
   int ant_x[NANTS];
   int ant_y[NANTS];
   short ant_red[NANTS];
@@ -43,7 +45,7 @@ struct state {
 static void *
 langton_ant_init (Display *dpy, Window window)
 {
-  int i;
+  int i, j;
   struct state *st = (struct state *) calloc (1, sizeof(*st));
   XGCValues gcv;
   XWindowAttributes xgwa;
@@ -70,6 +72,14 @@ langton_ant_init (Display *dpy, Window window)
     st->ant_red[i] = random();
     st->ant_green[i] = random();
     st->ant_blue[i] = random();
+  }
+
+  st->map = (bool **)malloc(st->xlim * st->ylim * sizeof(bool));
+
+  for (i=0; i < st->xlim; i++) {
+    for (j=0; j < st->ylim; j++) {
+      st->map[i][j] = false;
+    }
   }
 
   return st;
@@ -156,6 +166,7 @@ langton_ant_free (Display *dpy, Window window, void *closure)
 {
   struct state *st = (struct state *) closure;
   XFreeGC (st->dpy, st->gc);
+  free (st->map);
   free (st);
 }
 
