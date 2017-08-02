@@ -118,7 +118,6 @@ langton_ant_draw (Display *dpy, Window window, void *closure)
       x = st->ant_x[i];
       y = st->ant_y[i];
       ant_direc = st->ant_direction[i];
-      printf("%d: (%d, %d)\n", i, x, y);
       state = st->map[x][y];
   		if (state) {
         direc = 1;
