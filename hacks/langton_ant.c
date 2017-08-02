@@ -75,8 +75,8 @@ langton_ant_init (Display *dpy, Window window)
   st->gc = XCreateGC (st->dpy, st->window, GCForeground|GCBackground|GCFillStyle, &gcv);
 
   for (i = 0; i < NANTS; i++) {
-    st->ant_x[i] = st->xlim / 2;
-    st->ant_y[i] = st->ylim / 2;
+    st->ant_x[i] = random() % st->xlim;
+    st->ant_y[i] = random() % st->ylim;
     st->ant_direction[i] = random() % 4;
 
     st->ant_color[i].flags = DoRed|DoGreen|DoBlue;
@@ -114,28 +114,31 @@ langton_ant_draw (Display *dpy, Window window, void *closure)
   XGCValues gcv;
 
   for (j = 0; j < steps; j++) {
-    x = st->ant_x[i];
-    y = st->ant_y[i];
-    ant_direc = st->ant_direction[i];
-    state = st->map[x][y];
-		if (state) {
-      direc = 1;
-      gcv.foreground = st->background.pixel;
-    } else {
-      direc = -1;
-      gcv.foreground = st->ant_color[i].pixel;
+    for (i = 0; i < NANTS; i++) {
+      x = st->ant_x[i];
+      y = st->ant_y[i];
+      ant_direc = st->ant_direction[i];
+      printf("%d: (%d, %d)\n", i, x, y);
+      state = st->map[x][y];
+  		if (state) {
+        direc = 1;
+        gcv.foreground = st->background.pixel;
+      } else {
+        direc = -1;
+        gcv.foreground = st->ant_color[i].pixel;
+      }
+
+      gcv.background = st->background.pixel;
+      XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
+      XDrawPoint (st->dpy, st->window, st->gc, x, y);
+
+      st->map[x][y] = (state + 1) % 2;
+      st->ant_x[i] = x + magic_modulo_two(ant_direc + 1) * direc;
+      st->ant_x[i] = (st->ant_x[i] + st->xlim) % st->xlim;
+      st->ant_y[i] = y + magic_modulo_two(ant_direc) * direc;
+      st->ant_y[i] = (st->ant_y[i] + st->ylim) % st->ylim;
+      st->ant_direction[i] = (ant_direc + direc + 4) % 4;
     }
-
-    gcv.background = st->background.pixel;
-    XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
-    XDrawPoint (st->dpy, st->window, st->gc, x, y);
-
-    st->map[x][y] = (state + 1) % 2;
-    st->ant_x[i] = x + magic_modulo_two(ant_direc + 1) * direc;
-    st->ant_x[i] = (st->ant_x[i] + st->xlim) % st->xlim;
-    st->ant_y[i] = y + magic_modulo_two(ant_direc) * direc;
-    st->ant_y[i] = (st->ant_y[i] + st->ylim) % st->ylim;
-    st->ant_direction[i] = (ant_direc + direc + 4) % 4;
   }
 
   return st->delay;
