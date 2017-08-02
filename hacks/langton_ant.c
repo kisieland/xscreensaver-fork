@@ -74,7 +74,7 @@ langton_ant_init (Display *dpy, Window window)
   gcv.fill_style= FillOpaqueStippled;
   st->gc = XCreateGC (st->dpy, st->window, GCForeground|GCBackground|GCFillStyle, &gcv);
 
-  for (i=0; i < NANTS; i++) {
+  for (i = 0; i < NANTS; i++) {
     st->ant_x[i] = st->xlim / 2;
     st->ant_y[i] = st->ylim / 2;
     st->ant_direction[i] = random() % 4;
@@ -95,9 +95,9 @@ langton_ant_init (Display *dpy, Window window)
     printf("ERROR: should crash now.\n");
 
   st->map = (short **) malloc (st->xlim * sizeof(short *));
-  for (i=0; i < st->xlim; i++) {
+  for (i = 0; i < st->xlim; i++) {
     st->map[i] = (short *) malloc (st->ylim * sizeof(short));
-    for (j=0; j < st->ylim; j++) {
+    for (j = 0; j < st->ylim; j++) {
       st->map[i][j] = 0;
     }
   }
@@ -109,31 +109,33 @@ static unsigned long
 langton_ant_draw (Display *dpy, Window window, void *closure)
 {
   struct state *st = (struct state *) closure;
-  int i=0, j;
-  short direction;
+  int i = 0, j, x, y;
+  short direc, state, ant_direc;
   XGCValues gcv;
 
-  for (j=0; j < steps; j++) {
-		if (st->map[st->ant_x[i]][st->ant_y[i]]) {
-      direction = 1;
-      st->map[st->ant_x[i]][st->ant_y[i]] = 0;
-
+  for (j = 0; j < steps; j++) {
+    x = st->ant_x[i];
+    y = st->ant_y[i];
+    ant_direc = st->ant_direction[i];
+    state = st->map[x][y];
+		if (state) {
+      direc = 1;
       gcv.foreground = st->background.pixel;
-      gcv.background = st->background.pixel;
     } else {
-      direction = -1;
-      st->map[st->ant_x[i]][st->ant_y[i]] = 1;
-
+      direc = -1;
       gcv.foreground = st->ant_color[i].pixel;
-      gcv.background = st->background.pixel;
     }
 
+    gcv.background = st->background.pixel;
     XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
-    XDrawPoint (st->dpy, st->window, st->gc, st->ant_x[i], st->ant_y[i]);
+    XDrawPoint (st->dpy, st->window, st->gc, x, y);
 
-    st->ant_x[i] = st->ant_x[i] + magic_modulo_two(st->ant_direction[i] + 1) * direction;
-    st->ant_y[i] = st->ant_y[i] + magic_modulo_two(st->ant_direction[i]) * direction;
-    st->ant_direction[i] = (st->ant_direction[i] + direction + 4) % 4;
+    st->map[x][y] = (state + 1) % 2;
+    st->ant_x[i] = x + magic_modulo_two(ant_direc + 1) * direc;
+    st->ant_x[i] = (st->ant_x[i] + st->xlim) % st->xlim;
+    st->ant_y[i] = y + magic_modulo_two(ant_direc) * direc;
+    st->ant_y[i] = (st->ant_y[i] + st->ylim) % st->ylim;
+    st->ant_direction[i] = (ant_direc + direc + 4) % 4;
   }
 
   return st->delay;
