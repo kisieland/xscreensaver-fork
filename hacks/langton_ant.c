@@ -9,7 +9,7 @@
  * implied warranty.
  */
 
-#include <stdbool.h>
+#include <stdio.h>
 #include "screenhack.h"
 
 #ifndef HAVE_JWXYZ
@@ -20,8 +20,7 @@
 
 #define NANTS 5
 
-#define steps 500
-
+#define steps 50
 
 struct state {
   Display *dpy;
@@ -33,13 +32,22 @@ struct state {
   Bool grey_p;
   Colormap cmap;
 
-  bool **map;
+  short **map;
   int ant_x[NANTS];
   int ant_y[NANTS];
-  short ant_red[NANTS];
-  short ant_green[NANTS];
-  short ant_blue[NANTS];
+  short ant_direction[NANTS];
+  XColor ant_color[NANTS];
+  XColor background;
 };
+
+int magic_modulo_two(int a)
+{
+  if (a == 1)
+    return 1;
+  if (a == 3)
+    return -1;
+  return 0;
+}
 
 
 static void *
@@ -67,18 +75,30 @@ langton_ant_init (Display *dpy, Window window)
   st->gc = XCreateGC (st->dpy, st->window, GCForeground|GCBackground|GCFillStyle, &gcv);
 
   for (i=0; i < NANTS; i++) {
-    st->ant_x[i] = random() % st->xlim;
-    st->ant_y[i] = random() % st->ylim;
-    st->ant_red[i] = random();
-    st->ant_green[i] = random();
-    st->ant_blue[i] = random();
+    st->ant_x[i] = st->xlim / 2;
+    st->ant_y[i] = st->ylim / 2;
+    st->ant_direction[i] = random() % 4;
+
+    st->ant_color[i].flags = DoRed|DoGreen|DoBlue;
+    st->ant_color[i].red = random();
+    st->ant_color[i].green = random();
+    st->ant_color[i].blue = random();
+    if (! XAllocColor (st->dpy, st->cmap, &(st->ant_color[i])))
+      printf("ERROR: should crash now.\n");
   }
 
-  st->map = (bool **)malloc(st->xlim * st->ylim * sizeof(bool));
+  st->background.flags = DoRed|DoGreen|DoBlue;
+  st->background.red = 0;
+  st->background.green = 0;
+  st->background.blue = 0;
+  if (! XAllocColor (st->dpy, st->cmap, &(st->background)))
+    printf("ERROR: should crash now.\n");
 
+  st->map = (short **) malloc (st->xlim * sizeof(short *));
   for (i=0; i < st->xlim; i++) {
+    st->map[i] = (short *) malloc (st->ylim * sizeof(short));
     for (j=0; j < st->ylim; j++) {
-      st->map[i][j] = false;
+      st->map[i][j] = 0;
     }
   }
 
@@ -89,41 +109,33 @@ static unsigned long
 langton_ant_draw (Display *dpy, Window window, void *closure)
 {
   struct state *st = (struct state *) closure;
-  int n=0, i=0, j;
+  int i=0, j;
+  short direction;
   XGCValues gcv;
-  XColor fgc, bgc;
-  XPoint points[steps];
-
 
   for (j=0; j < steps; j++) {
-    points[j].x = random () % st->xlim;
-    points[j].y = random () % st->ylim;
-    n++;
+		if (st->map[st->ant_x[i]][st->ant_y[i]]) {
+      direction = 1;
+      st->map[st->ant_x[i]][st->ant_y[i]] = 0;
+
+      gcv.foreground = st->background.pixel;
+      gcv.background = st->background.pixel;
+    } else {
+      direction = -1;
+      st->map[st->ant_x[i]][st->ant_y[i]] = 1;
+
+      gcv.foreground = st->ant_color[i].pixel;
+      gcv.background = st->background.pixel;
+    }
+
+    XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
+    XDrawPoint (st->dpy, st->window, st->gc, st->ant_x[i], st->ant_y[i]);
+
+    st->ant_x[i] = st->ant_x[i] + magic_modulo_two(st->ant_direction[i] + 1) * direction;
+    st->ant_y[i] = st->ant_y[i] + magic_modulo_two(st->ant_direction[i]) * direction;
+    st->ant_direction[i] = (st->ant_direction[i] + direction + 4) % 4;
   }
 
-  fgc.flags = bgc.flags = DoRed|DoGreen|DoBlue;
-  fgc.red = random ();
-  fgc.green = random ();
-  fgc.blue = random ();
-  bgc.red = st->ant_red[i];
-  bgc.green = st->ant_green[i];
-  bgc.blue = st->ant_blue[i];
-
-  if (st->grey_p)
-  {
-    fgc.green = fgc.blue = fgc.red;
-    bgc.green = bgc.blue = bgc.red;
-  }
-
-  if (! XAllocColor (st->dpy, st->cmap, &fgc))
-    printf("xd1\n");
-  if (! XAllocColor (st->dpy, st->cmap, &bgc))
-    printf("xd2\n");
-
-  gcv.foreground = fgc.pixel;
-  gcv.background = bgc.pixel;
-  XChangeGC (st->dpy, st->gc, GCForeground, &gcv);
-  XDrawPoints (st->dpy, st->window, st->gc, points, n, CoordModeOrigin);
   return st->delay;
 }
 
