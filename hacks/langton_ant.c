@@ -20,7 +20,7 @@
 
 #define NANTS 5
 
-#define steps 50
+#define steps 20
 
 struct state {
   Display *dpy;
