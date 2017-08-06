@@ -167,8 +167,34 @@ langton_ant_reshape (Display *dpy, Window window, void *closure,
                  unsigned int w, unsigned int h)
 {
   struct state *st = (struct state *) closure;
+  short ** tmp;
+  int i, j;
+
+  /* Map reshape */
+  tmp = (short **) malloc (w * sizeof(short *));
+  for (i = 0; i < w; i++) {
+    tmp[i] = (short *) malloc (h * sizeof(short));
+    for (j = 0; j < h; j++) {
+      tmp[i][j] = 0;
+      if (i < st->xlim && j < st->ylim)
+        tmp[i][j] = st->map[i][j];
+    }
+  }
+
+  for (i = 0; i < st->xlim; i++) {
+    free(st->map[i]);
+  }
+  free(st->map);
+
+  st->map = tmp;
   st->xlim = w;
   st->ylim = h;
+
+  /* If ant is out of map then it's moved */
+  for (i = 0; i < NANTS; i++){
+    st->ant_x[i] = st->ant_x[i] % st->xlim;
+    st->ant_y[i] = st->ant_y[i] % st->ylim;
+  }
 }
 
 static Bool
@@ -181,7 +207,12 @@ static void
 langton_ant_free (Display *dpy, Window window, void *closure)
 {
   struct state *st = (struct state *) closure;
+  int i;
+
   XFreeGC (st->dpy, st->gc);
+  for (i = 0; i < st->xlim; i++) {
+    free(st->map[i]);
+  }
   free (st->map);
   free (st);
 }
