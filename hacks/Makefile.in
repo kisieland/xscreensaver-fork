@@ -122,7 +122,8 @@ SRCS		= attraction.c blitspin.c bouboule.c braid.c bubbles.c \
 		  boxfit.c interaggregate.c celtic.c cwaves.c m6502.c \
 		  asm6502.c abstractile.c lcdscrub.c hexadrop.c \
 		  tessellimage.c delaunay.c recanim.c binaryring.c \
-		  webcollage-cocoa.m webcollage-helper-cocoa.m testx11.c
+		  webcollage-cocoa.m webcollage-helper-cocoa.m testx11.c \
+		  langton_ant.c
 SCRIPTS		= vidwhacker webcollage ljlatest
 
 # Programs that are mentioned in XScreenSaver.ad, and that have XML files,
@@ -162,7 +163,7 @@ OBJS		= attraction.o blitspin.o bouboule.o braid.o bubbles.o \
 		  interaggregate.o celtic.o cwaves.o webcollage-cocoa.o \
 		  webcollage-helper-cocoa.o m6502.o asm6502.o abstractile.o \
 		  lcdscrub.o hexadrop.o tessellimage.o delaunay.o recanim.o \
-		  binaryring.o testx11.o
+		  binaryring.o testx11.o langton_ant.o
 
 EXES		= attraction blitspin bouboule braid decayscreen deco \
 		  drift flame galaxy grav greynetic halo \
@@ -184,7 +185,7 @@ EXES		= attraction blitspin bouboule braid decayscreen deco \
 		  pacman fuzzyflakes anemotaxis memscroller substrate \
 		  intermomentary fireworkx fiberlamp boxfit interaggregate \
 		  celtic cwaves m6502 abstractile lcdscrub hexadrop \
-		  tessellimage binaryring \
+		  tessellimage binaryring langton_ant \
 		  @JPEG_EXES@
 JPEG_EXES	= webcollage-helper
 
@@ -240,7 +241,8 @@ MEN		= anemone.man apollonian.man attraction.man \
 		  anemotaxis.man memscroller.man substrate.man \
 		  intermomentary.man fireworkx.man fiberlamp.man boxfit.man \
 		  interaggregate.man celtic.man cwaves.man abstractile.man \
-		  lcdscrub.man hexadrop.man tessellimage.man binaryring.man
+		  lcdscrub.man hexadrop.man tessellimage.man binaryring.man \
+		  langton_ant.man
 
 RETIRED_MEN	= ant.man bubbles.man critical.man flag.man forest.man \
 		  laser.man lightning.man lisa.man lissie.man lmorph.man \
@@ -914,6 +916,9 @@ julia:		julia.o		$(XLOCK_OBJS)
 	$(CC_HACK) -o $@ $@.o	$(XLOCK_OBJS) $(HACK_LIBS)
 
 laser:		laser.o		$(XLOCK_OBJS)
+	$(CC_HACK) -o $@ $@.o	$(XLOCK_OBJS) $(HACK_LIBS)
+
+langton_ant:	langton_ant.o	$(XLOCK_OBJS)
 	$(CC_HACK) -o $@ $@.o	$(XLOCK_OBJS) $(HACK_LIBS)
 
 lightning:	lightning.o	$(XLOCK_OBJS)
@@ -1948,6 +1953,19 @@ laser.o: $(UTILS_SRC)/xshm.h
 laser.o: $(UTILS_SRC)/yarandom.h
 laser.o: $(srcdir)/xlockmoreI.h
 laser.o: $(srcdir)/xlockmore.h
+langton_ant.o: ../config.h
+langton_ant.o: $(srcdir)/fps.h
+langton_ant.o: $(srcdir)/screenhackI.h
+langton_ant.o: $(UTILS_SRC)/colors.h
+langton_ant.o: $(UTILS_SRC)/grabscreen.h
+langton_ant.o: $(UTILS_SRC)/hsv.h
+langton_ant.o: $(UTILS_SRC)/resources.h
+langton_ant.o: $(UTILS_SRC)/usleep.h
+langton_ant.o: $(UTILS_SRC)/visual.h
+langton_ant.o: $(UTILS_SRC)/xshm.h
+langton_ant.o: $(UTILS_SRC)/yarandom.h
+langton_ant.o: $(srcdir)/xlockmoreI.h
+langton_ant.o: $(srcdir)/xlockmore.h
 lcdscrub.o: ../config.h
 lcdscrub.o: $(srcdir)/fps.h
 lcdscrub.o: $(srcdir)/screenhackI.h

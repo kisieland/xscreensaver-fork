@@ -6,7 +6,7 @@ greynetic - draw random stippled/color rectangles
 [\-display \fIhost:display.screen\fP] [\-foreground \fIcolor\fP] [\-background \fIcolor\fP] [\-window] [\-root] [\-mono] [\-install] [\-visual \fIvisual\fP] [\-delay \fIusecs\fP]
 [\-fps]
 .SH DESCRIPTION
-The \fIgreynetic\fP program draws random rectangles.
+The \fIgreynetic\fP program draws Langton Ants movements.
 .SH OPTIONS
 .I greynetic
 accepts the following options:

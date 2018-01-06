@@ -227,6 +227,7 @@ GetViewPortIsFullOfLies: False
 				truchet -root				    \n\
 -				vidwhacker -root			    \n\
 				blaster -root				    \n\
+				langton_ant -root			    \n\
 				bumps -root				    \n\
 				ccurve -root				    \n\
 				compass -root				    \n\
